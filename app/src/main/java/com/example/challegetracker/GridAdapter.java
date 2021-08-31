@@ -22,11 +22,11 @@ public class GridAdapter extends BaseAdapter {
     }
     @Override
     public Object getItem(int i) {
-        return null;
+        return days[i];
     }
     @Override
     public long getItemId(int i) {
-        return 0;
+        return i;
     }
     @Override
     public View getView(int i, View view, ViewGroup viewGroup) {
@@ -35,6 +35,6 @@ public class GridAdapter extends BaseAdapter {
         number_view.setText(String.valueOf(days[i])); // set logo images
         return view;
 
-        
+
     }
 }

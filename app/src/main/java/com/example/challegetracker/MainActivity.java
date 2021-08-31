@@ -3,6 +3,7 @@ package com.example.challegetracker;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -19,9 +20,8 @@ import java.util.stream.IntStream;
 @RequiresApi(api = Build.VERSION_CODES.N)
 public class MainActivity extends AppCompatActivity {
     GridView challenge_grid;
-    TextView day_number;
     int[] days = new int[100];
-
+    int checked = 0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -33,6 +33,14 @@ public class MainActivity extends AppCompatActivity {
         GridAdapter gridAdapter = new GridAdapter(this, days);
         challenge_grid.setAdapter(gridAdapter);
 
+        challenge_grid.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> parent, View v, int position, long id) {
+
+                TextView current_day = (TextView) v.findViewById(R.id.day_number);
+                current_day.setBackgroundColor(Color.parseColor("#9FE554"));
+
+            }
+        });
     }
 
     public void populate(int[] a) {
