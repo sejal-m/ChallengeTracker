@@ -1,0 +1,114 @@
+package com.example.weather;
+
+        import android.app.Dialog;
+        import android.content.ContentValues;
+        import android.content.Context;
+        import android.content.Intent;
+        import android.database.Cursor;
+        import android.database.sqlite.SQLiteDatabase;
+        import android.graphics.Color;
+        import android.net.ConnectivityManager;
+        import android.net.NetworkInfo;
+        import android.os.AsyncTask;
+        import android.os.Bundle;
+        import android.util.Log;
+        import android.view.View;
+        import android.widget.Button;
+        import android.widget.LinearLayout;
+        import android.widget.RelativeLayout;
+        import android.widget.TableLayout;
+        import android.widget.TextView;
+        import android.widget.Toast;
+
+        import androidx.annotation.NonNull;
+        import androidx.appcompat.app.AppCompatActivity;
+        import androidx.constraintlayout.widget.ConstraintLayout;
+        import androidx.fragment.app.FragmentManager;
+        import androidx.fragment.app.FragmentTransaction;
+        import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
+        import com.example.weather.data.WeatherContract;
+        import com.example.weather.data.WeatherDbHelper;
+        import com.google.android.material.bottomsheet.BottomSheetBehavior;
+
+        import java.text.ParseException;
+        import java.text.SimpleDateFormat;
+        import java.util.Calendar;
+        import java.util.Date;
+
+public class SearchActivity extends AppCompatActivity {
+
+    Dialog myDialog;
+    public static final String LOG_TAG = SearchActivity.class.getName();
+    private static String initial_url = "https://api.openweathermap.org/data/2.5/weather?appid=fe21f6f759504260a7aa9a4c3b6a2492&q=";
+    private static String request_url;
+    SwipeRefreshLayout refreshLayout;
+    TextView date_time, temp, min, max, desc, city;
+    TextView prec_probability, humidity, sunrise, sunset;
+    LinearLayout detailed_forecast;
+    RelativeLayout base_container;
+    private BottomSheetBehavior mBottomSheetBehavior;
+    private int updated = 0;
+    String city_name;
+    Button concise, detailed;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_search);
+
+        Intent i = getIntent();
+        city_name = i.getStringExtra("city_name");
+        request_url = initial_url+city_name;
+        Log.v("SearchActivity", request_url );
+        base_container = findViewById(R.id.base_container);
+        desc = findViewById(R.id.desc);
+        min = findViewById(R.id.min_temp);
+        max = findViewById(R.id.max_temp);
+        date_time = findViewById(R.id.date_time);
+        temp = findViewById(R.id.temp);
+        city = findViewById(R.id.city_name);
+        refreshLayout = findViewById(R.id.pullToRefresh);
+        prec_probability = findViewById(R.id.prec_probability);
+        detailed_forecast = findViewById(R.id.detailed_forecast);
+        humidity = findViewById(R.id.humidity);
+        sunrise = findViewById(R.id.sunrise);
+        sunset = findViewById(R.id.sunset);
+        myDialog = new Dialog(this);
+
+        View bottomSheet = findViewById(R.id.bottom_sheet);
+        mBottomSheetBehavior = BottomSheetBehavior.from(bottomSheet);
+        mBottomSheetBehavior.setHideable(false);
+
+
+
+        mBottomSheetBehavior.setBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                switch (newState) {
+                    case BottomSheetBehavior.STATE_COLLAPSED:
+                    case BottomSheetBehavior.STATE_SETTLING:
+                        prec_probability.setVisibility(View.VISIBLE);
+                        detailed_forecast.setVisibility(View.INVISIBLE);
+                        //prec_probability.setText("50% chance of precipitation today.");
+                        //prec_probability.setBackgroundColor(Color.parseColor("#4D1F9F"));
+                        break;
+                    case BottomSheetBehavior.STATE_DRAGGING: case BottomSheetBehavior.STATE_EXPANDED:
+                        prec_probability.setVisibility(View.GONE);
+                        detailed_forecast.setVisibility(View.VISIBLE);
+                        //prec_probability.setText("Weather Details");
+                        //prec_probability.setBackgroundColor(Color.parseColor("#ffffff"));
+                        break;
+                }
+            }
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+                //sample.setText("Sliding...");
+            }
+        });
+
+        updateBackground();
+
+
+        if (isNetworkAvailable()) {
+        
